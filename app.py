@@ -18,7 +18,7 @@ class Recommender():
         prediction = get_content(id)
         print(prediction)
         output = {
-            'emotion': prediction
+            'recommendation': prediction
         }
         res.body = json.dumps(output)
 
