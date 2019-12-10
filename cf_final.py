@@ -167,7 +167,7 @@ def get_content(id):
 #            "total_selection": content_data[0][13],
         }
         list_content.append(content)
-        
+    mycursor.close()    
     return list_content
 
 # a = get_content(28)
