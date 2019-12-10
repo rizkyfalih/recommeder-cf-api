@@ -5,26 +5,36 @@ from sklearn.neighbors import NearestNeighbors
 from scipy.sparse import csr_matrix
 from sklearn.metrics.pairwise import pairwise_distances
 from correlation_pearson.code import CorrelationPearson
+pearson = CorrelationPearson()
 import operator
 
 from sqlalchemy import create_engine
 import pymysql
 import mysql.connector
 
+# Database config
+mydb = mysql.connector.connect(
+  host="103.129.222.66",
+  port= 3306,
+  user="mylearn1_mylearn1",
+  password="W7e3l7:5zK!dOF",
+  database="mylearn1_mylearning"
+)
 
-def recommendation(id):    
-    pearson = CorrelationPearson()
+mycursor = mydb.cursor()
 
-    db_connection_str = 'mysql+pymysql://mylearn1_mylearn1:W7e3l7:5zK!dOF@103.129.222.66:3306/mylearn1_mylearning'
-    db_connection = create_engine(db_connection_str)
 
-    sql = """SELECT us.user_id, us.content_id, c.title, c.content_img, c.description, r.rating, b.bookmarked, t.timespent, us.total_selection 
-    FROM user_selection us 
-    LEFT OUTER JOIN ratings r ON r.user_id = us.user_id AND r.content_id = us.content_id
-    LEFT OUTER JOIN bookmarks b ON b.user_id = us.user_id AND b.content_id = us.content_id
-    LEFT OUTER JOIN timespents t ON t.user_id = us.user_id AND t.content_id = us.content_id
-    LEFT OUTER JOIN contents c ON c.id = us.content_id"""
+db_connection_str = 'mysql+pymysql://mylearn1_mylearn1:W7e3l7:5zK!dOF@103.129.222.66:3306/mylearn1_mylearning'
+db_connection = create_engine(db_connection_str)
 
+sql = """SELECT us.user_id, us.content_id, c.title, c.content_img, c.description, r.rating, b.bookmarked, t.timespent, us.total_selection 
+FROM user_selection us 
+LEFT OUTER JOIN ratings r ON r.user_id = us.user_id AND r.content_id = us.content_id
+LEFT OUTER JOIN bookmarks b ON b.user_id = us.user_id AND b.content_id = us.content_id
+LEFT OUTER JOIN timespents t ON t.user_id = us.user_id AND t.content_id = us.content_id
+LEFT OUTER JOIN contents c ON c.id = us.content_id"""
+
+def recommendation(id): 
     # Import data
     #raw = pd.read_csv('WLO_raw(1).csv', delimiter=';')
     raw = pd.read_sql(sql, con=db_connection)
@@ -132,21 +142,9 @@ def recommendation(id):
     # Data Final
     final_seq_df = pd.DataFrame(final_seq,columns=["user_id","Recommendation Sequence"])
     #print(final_seq_df)
-    db_connection.dispose()
     return final_seq_df["Recommendation Sequence"][final_seq_df.index[final_seq_df['user_id'] == id]].item()
 
 def get_content(id):
-    # Database config
-    mydb = mysql.connector.connect(
-        host="103.129.222.66",
-        port= 3306,
-        user="mylearn1_mylearn1",
-        password="W7e3l7:5zK!dOF",
-        database="mylearn1_mylearning"
-    )
-
-    mycursor = mydb.cursor()
-
     list_id = recommendation(id)
     list_content = []
     for i in range(len(list_id)):
@@ -169,7 +167,7 @@ def get_content(id):
 #            "total_selection": content_data[0][13],
         }
         list_content.append(content)
-    mycursor.close()    
+        
     return list_content
 
 # a = get_content(28)
