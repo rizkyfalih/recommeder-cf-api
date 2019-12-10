@@ -12,29 +12,19 @@ from sqlalchemy import create_engine
 import pymysql
 import mysql.connector
 
-# Database config
-mydb = mysql.connector.connect(
-  host="103.129.222.66",
-  port= 3306,
-  user="mylearn1_mylearn1",
-  password="W7e3l7:5zK!dOF",
-  database="mylearn1_mylearning"
-)
-
-mycursor = mydb.cursor()
-
-
-db_connection_str = 'mysql+pymysql://mylearn1_mylearn1:W7e3l7:5zK!dOF@103.129.222.66:3306/mylearn1_mylearning'
-db_connection = create_engine(db_connection_str)
-
-sql = """SELECT us.user_id, us.content_id, c.title, c.content_img, c.description, r.rating, b.bookmarked, t.timespent, us.total_selection 
-FROM user_selection us 
-LEFT OUTER JOIN ratings r ON r.user_id = us.user_id AND r.content_id = us.content_id
-LEFT OUTER JOIN bookmarks b ON b.user_id = us.user_id AND b.content_id = us.content_id
-LEFT OUTER JOIN timespents t ON t.user_id = us.user_id AND t.content_id = us.content_id
-LEFT OUTER JOIN contents c ON c.id = us.content_id"""
 
 def recommendation(id): 
+    db_connection_str = 'mysql+pymysql://mylearn1_mylearn1:W7e3l7:5zK!dOF@103.129.222.66:3306/mylearn1_mylearning'
+    db_connection = create_engine(db_connection_str)
+
+    sql = """SELECT us.user_id, us.content_id, c.title, c.content_img, c.description, r.rating, b.bookmarked, t.timespent, us.total_selection 
+    FROM user_selection us 
+    LEFT OUTER JOIN ratings r ON r.user_id = us.user_id AND r.content_id = us.content_id
+    LEFT OUTER JOIN bookmarks b ON b.user_id = us.user_id AND b.content_id = us.content_id
+    LEFT OUTER JOIN timespents t ON t.user_id = us.user_id AND t.content_id = us.content_id
+    LEFT OUTER JOIN contents c ON c.id = us.content_id"""
+
+
     # Import data
     #raw = pd.read_csv('WLO_raw(1).csv', delimiter=';')
     raw = pd.read_sql(sql, con=db_connection)
@@ -145,6 +135,15 @@ def recommendation(id):
     return final_seq_df["Recommendation Sequence"][final_seq_df.index[final_seq_df['user_id'] == id]].item()
 
 def get_content(id):
+    mydb = mysql.connector.connect(
+        host="103.129.222.66",
+        port= 3306,
+        user="mylearn1_mylearn1",
+        password="W7e3l7:5zK!dOF",
+        database="mylearn1_mylearning"
+    )
+    mycursor = mydb.cursor()
+    
     list_id = recommendation(id)
     list_content = []
     for i in range(len(list_id)):
